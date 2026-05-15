@@ -10,6 +10,7 @@ This file records what was fixed in this PR, what was deferred, and the reasonin
 | ID | Change | Why | Confidence |
 |---|---|---|---|
 | CRIT-1 | Added `/dental-staffing-bronx-county` and `/nj/essex-county-dental-staffing` to sitemap with `priority=0.7`, `changefreq=monthly`, `lastmod=2026-05-15` | Both are live routes in the main site's Router.tsx but were absent from the sitemap. Pattern (priority/changefreq) matches the other county/state landing pages. `lastmod` reflects the actual date these were added to the sitemap. | High — verified against Router.tsx route list, no judgment call required. |
+| Pass-2 | Normalized all 25 sitemap URLs from `https://dentalstaffers.com/...` → `https://www.dentalstaffers.com/...` | Production redirects apex → www. The "real" canonical hostname is www. Production's auto-generated sitemap uses www. This sitemap was the only crawl-relevant artifact using apex. | High — verified by curl on `https://dentalstaffers.com/`, `https://dentalstaffers.com/about`, and `https://dentalstaffers.com/sitemap.xml` (all 301 to www). |
 
 ## Deferred (need user confirmation before action)
 
@@ -30,6 +31,8 @@ This file records what was fixed in this PR, what was deferred, and the reasonin
 
 ## Honest calibration
 
-This PR is a small, targeted fix on a small, single-purpose repo. It plugs a 2-route gap in the sitemap that was a real (but minor) indexing/crawl-budget issue. The larger SEO lever for this business is the main Wix Vibe site — the title/description bug I fixed via SOP-01 against the local zip. Until that fix is deployed to production, every non-home page on dentalstaffers.com is server-rendering an identical `<title>Home | DentalStaffers.com</title>`. That's the single biggest unblock.
+This PR is a small, targeted fix on a small, single-purpose repo. Pass-2 audit changed the picture: SOP-01 is already deployed to production, so the title/description bug is closed. The new top-priority codebase bug is **canonical hostname pointing to a 301-redirector** (apex instead of www) — that lives in the main-site repo, not here.
 
-Estimated impact of *this* PR alone, calibrated honestly: 1–2/10. Two missing pages get crawled and indexed faster. The other 23 pages were already in the sitemap; this PR doesn't affect them.
+Estimated impact of *this* PR alone, calibrated honestly: **1/10**. The sitemap in this repo is orphaned (production's robots.txt points elsewhere), so fixes here may never be crawled. The aligned-with-production hostname is more about "if anyone ever does pull this XML, it doesn't conflict with production canonicals" than about driving rankings.
+
+**The high-leverage next moves are all in the main-site repo:** fix the canonical-hostname bug (CRIT-2), fix the broken `/logo.png` URL in schema (CRIT-3), add per-page schema variation, add real per-page BreadcrumbList. Roughly 6/10 → 8/10 of available technical-SEO impact lives there.
